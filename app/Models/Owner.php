@@ -43,4 +43,8 @@ class Owner extends Authenticatable
     public function shop(){
         return $this->hasOne(\App\Models\Shop::class);
     }
+
+    public function image(){
+        return $this->hasMany(\App\Models\Image::class);
+    }
 }

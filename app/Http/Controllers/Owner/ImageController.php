@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadImageRequest;
 use App\Models\Image;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
@@ -15,9 +17,8 @@ class ImageController extends Controller
         $this->middleware('auth:owners');
 
         $this->middleware(function ($request, $next){
-            //dd($request->route()->parameter('shop')); //String
-            //dd(Auth::id()); //number
-            $id = $request->route()->parameter('shop'); //shopのid取得
+
+            $id = $request->route()->parameter('image');
             if(!is_null($id)){ // null判定
                 $imagesOwnerId = Image::findOrFail($id)->owner->id;
                 $imageId = (int)$imagesOwnerId;
@@ -36,8 +37,8 @@ class ImageController extends Controller
     public function index()
     {
         $images = Image::where('owner_id', Auth::id())
-        ->orderBy('updated_at', 'desc');
-        // ->pagination(20);
+        ->orderBy('updated_at', 'desc')
+        ->paginate(5);
 
         return view('owner.images.index', compact('images'));
     }
@@ -60,18 +61,19 @@ class ImageController extends Controller
      */
     public function store(UploadImageRequest $request)
     {
-        dd($request);
-    }
+        $imageFiles = $request->file('files');
+        if(!is_null($imageFiles)){
+            foreach($imageFiles as $imageFile){
+                $fileNameToStore = ImageService::upload($imageFile, 'products');
+                Image::create([
+                    'owner_id' => Auth::id(),
+                    'filename' => $fileNameToStore,
+                ]);
+            }
+        }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
+        return redirect()->route('owner.images.index')
+        ->with(['message' => '画像を登録しました。', 'status'=> 'info']);
     }
 
     /**
@@ -82,7 +84,8 @@ class ImageController extends Controller
      */
     public function edit($id)
     {
-        //
+        $image = Image::findOrFail($id);
+        return view('owner.images.edit', compact('image'));
     }
 
     /**
@@ -94,7 +97,17 @@ class ImageController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'string|max:50',
+        ]);
+
+        $image = Image::findOrFail($id);
+        $image->title = $request->title;
+        $image->save();
+
+        return redirect()->route('owner.images.index')
+        ->with(['message'=>'画像情報を更新しました。', 'status'=>'info']);
+
     }
 
     /**
@@ -105,6 +118,15 @@ class ImageController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $image = Image::findOrFail($id);
+        $filePath = 'public/products/'. $image->filename;
+        if(Storage::exists($filePath)){
+            Storage::delete($filePath);
+        }
+
+        Image::findOrFail($id)->delete(); //soft delete
+        return redirect()->route('owner.images.index')
+        ->with(['message'=> '画像を削除しました。',
+        'status'=> 'alert']);
     }
 }

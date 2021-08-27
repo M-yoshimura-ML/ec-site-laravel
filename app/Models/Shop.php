@@ -23,6 +23,6 @@ class Shop extends Model
     }
 
     public function product(){
-        return $this->hasMany(\App\Models\product::class);
+        return $this->hasMany(\App\Models\Product::class);
     }
 }

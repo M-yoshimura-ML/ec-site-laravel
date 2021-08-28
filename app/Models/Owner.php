@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Owner extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
         /**
      * The attributes that are mass assignable.
      *
@@ -38,4 +39,12 @@ class Owner extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function shop(){
+        return $this->hasOne(\App\Models\Shop::class);
+    }
+
+    public function image(){
+        return $this->hasMany(\App\Models\Image::class);
+    }
 }

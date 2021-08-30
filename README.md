@@ -15,3 +15,6 @@
 # storage folder link
 -   `"php artisan storage:link"`
 - file is disaplayed once it's saved in `"storage/app/public/products"` 
+
+# shop image
+- make `"storage/app/public/shops"` folder

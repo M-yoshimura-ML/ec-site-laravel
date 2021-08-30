@@ -6,9 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 class ItemController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:users');
+    }
+
     public function index(){
         $stocks = DB::table('t_stocks')
         ->select('product_id', DB::raw('sum(quantity) as quantity'))
@@ -36,5 +41,10 @@ class ItemController extends Controller
         // $products = Product::all();
 
         return view('user.index', compact('products'));
+    }
+
+    public function show($id){
+        $product = Product::findOrFail($id);
+        return view('user.show', compact('product'));
     }
 }

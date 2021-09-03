@@ -24,6 +24,7 @@ class CartController extends Controller
 
         return view('user.cart', compact('products', 'totalPrice'));
     }
+
     public function add(Request $request){
         //dd($request);
         $ItemInCart = Cart::where('product_id', $request->product_id)
@@ -74,6 +75,7 @@ class CartController extends Controller
 
         }
         // dd($lineItems);
+        //せんたくされた商品の数だけ在庫数を減らす
         foreach($products as $product){
             Stock::create([
                 'product_id' => $product->id,
@@ -81,9 +83,9 @@ class CartController extends Controller
                 'quantity' => $product->pivot->quantity * -1,
             ]);
         }
-        dd('test');
+        //dd('test');
 
-        require 'vendor/autoload.php';
+        require base_path('vendor/autoload.php');
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
         $checkout_session = \Stripe\Checkout\Session::create([

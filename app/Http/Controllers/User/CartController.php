@@ -92,12 +92,18 @@ class CartController extends Controller
             'line_items' => [$lineItems],
             'payment_method_types' => ['card',],
             'mode' => 'payment',
-            'success_url' => route('user.items.index'),
+            'success_url' => route('user.cart.success'),
             'cancel_url' => route('user.cart.index'),
         ]);
 
         $publicKey = env('STRIPE_PUBLIC_KEY');
 
         return view('user.checkout', compact('checkout_session', 'publicKey'));
+    }
+
+    public function success(){
+        Cart::where('user_id',Auth::id())->delete();
+
+        return redirect()->route('user.items.index');
     }
 }

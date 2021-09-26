@@ -28,7 +28,9 @@ class ItemController extends Controller
     }
 
     public function index(Request $request){
-        $products = Product::availableItems()->sortOrder($request->sort)->get();
+        $products = Product::availableItems()
+        ->sortOrder($request->sort)
+        ->paginate($request->pagination);
 
         // dd($stocks, $products);
         // $products = Product::all();
